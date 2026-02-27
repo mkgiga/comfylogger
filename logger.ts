@@ -1,4 +1,4 @@
-import { ANSI } from './util/ansi';
+import { ANSI } from './util/ansi.js';
 
 export type LoggerRuntimeConfig = {
     autoSpaceBetween: boolean;
@@ -60,19 +60,20 @@ export const cliArgs = {
     },
 }
 
-for (const arg in process.argv) {
-    const handler = cliArgs[process.argv[arg] as keyof typeof cliArgs];
-    if (handler) {
-        let val = undefined;
-        if (Number(arg) + 1 < process.argv.length) {
-            val = process.argv[Number(arg) + 1];
-            handler(val!);
-        } else {
-            console.warn(`Expected value after ${process.argv[arg]}, but none found.`);
+if (typeof process !== 'undefined' && process.argv) {
+    for (const arg in process.argv) {
+        const handler = cliArgs[process.argv[arg] as keyof typeof cliArgs];
+        if (handler) {
+            let val = undefined;
+            if (Number(arg) + 1 < process.argv.length) {
+                val = process.argv[Number(arg) + 1];
+                handler(val!);
+            } else {
+                console.warn(`Expected value after ${process.argv[arg]}, but none found.`);
+            }
         }
     }
 }
-
 /**
  * A versatile, customizable logger that supports ANSI styling and event listeners to capture log output for various purposes.
  */
@@ -565,9 +566,3 @@ export default {
     ANSI,
 }
 
-// testing/debug
-const myCustomStyle = style(text => bold(cyan((text))));
-
-logger.log(
-    dim(myCustomStyle("FUCK YOU"))
-);
