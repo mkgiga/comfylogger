@@ -85,25 +85,17 @@ const __internalGlobalConfig = {
     }
 };
 
-export const blacklistTag = (tag: string) => {
-    __internalGlobalConfig.filter.blacklistTags.add(tag);
-}
-
-export const whitelistTag = (tag: string) => {
-    __internalGlobalConfig.filter.whitelistTags.add(tag);
-}
-
 export const cliArgs = {
     '--blacklist-tags': (value: string) => {
         const tags = value.split(',').map(tag => tag.trim());
         for (const tag of tags) {
-            blacklistTag(tag);
+            ComfyLoggerSettings.blacklistTag(tag);
         }
     },
     '--whitelist-tags': (value: string) => {
         const tags = value.split(',').map(tag => tag.trim());
         for (const tag of tags) {
-            whitelistTag(tag);
+            ComfyLoggerSettings.whitelistTag(tag);
         }
     },
 }
