@@ -257,7 +257,34 @@ export class ComfyLogger {
         (this as any)[name] = styleFn;
     }
 
+    #shouldLog(): boolean {
+        const tags = this.options.tags ?? [];
+        const blacklist = ComfyLoggerSettings.isTagBlacklisted;
+        const whitelist = ComfyLoggerSettings.isTagWhitelisted;
+        for (const tag of tags) {
+            
+            // precedence to whitelist
+            let whitelisted = false;
+            if (blacklist(tag)) {
+                // unless explicitly whitelisted
+                if (!whitelist(tag)) {
+                    whitelisted = true;
+                }
+
+                if (!whitelisted) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     log(strings: TemplateStringsArray | any, ...values: any[]) {
+        if (!this.#shouldLog()) {
+            return;
+        }
+        
         let result = this.#render(strings, ...values);
 
         for (const transform of this.#internal.transformers.before) {
