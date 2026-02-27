@@ -1,0 +1,7 @@
+# os files
+.DS_Store
+Thumbs.db
+
+# ide project files
+.idea/
+.vscode/
