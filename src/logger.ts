@@ -1,4 +1,6 @@
+
 import { ANSI } from './util/ansi.js';
+import { nanoid } from './util/random.js';
 
 export type LoggerRuntimeConfig = {
     autoSpaceBetween: boolean;
@@ -17,7 +19,11 @@ export type LoggerRuntimeConfig = {
 
 export type LoggerEvent = 'log';
 export type LoggerEventListener = (e: { output: string; stripped: string }) => void;
-export type ComfyLoggerConstructorOptions = Partial<LoggerRuntimeConfig & { listeners?: { log: LoggerEventListener[] } }>;
+export type ComfyLoggerConstructorOptions = Partial<LoggerRuntimeConfig & {
+    listeners?: { log: LoggerEventListener[] }
+    name?: string;
+}>;
+
 export type ComfyLoggerExternalLoggingOptions = {
     url: string;
     headers?: Record<string, string>;
@@ -100,6 +106,10 @@ export const cliArgs = {
     },
 }
 
+declare var process: {
+    argv: string[];
+}
+
 if (typeof process !== 'undefined' && process.argv) {
     for (const arg in process.argv) {
         const handler = cliArgs[process.argv[arg] as keyof typeof cliArgs];
@@ -128,6 +138,8 @@ export class ComfyLogger {
         logErrorsToConsole: sharedGlobalConfig.logErrorsToConsole,
     }
 
+    name: string = `logger-${nanoid()}`;
+
     constructor(options?: ComfyLoggerConstructorOptions) {
         if (options) {
             this.configure(options);
@@ -135,6 +147,10 @@ export class ComfyLogger {
                 for (const listener of options.listeners.log) {
                     this.addEventListener('log', listener);
                 }
+            }
+
+            if (options.name) {
+                this.name = options.name;
             }
         }
     }
@@ -284,7 +300,7 @@ export class ComfyLogger {
         if (!this.#shouldLog()) {
             return;
         }
-        
+
         let result = this.#render(strings, ...values);
 
         for (const transform of this.#internal.transformers.before) {
@@ -503,10 +519,30 @@ export const rainbow = (text: string): string => {
         return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
     };
 
-    return text.split('').map((char, i) => {
-        const hue = (i / Math.max(text.length - 1, 1)) * 360;
+    // Tokenize: ANSI escape sequences pass through, only visible chars get colored
+    const ANSI_RE = /\x1b\[[0-9;]*m/g;
+    type Token = { ansi: true; value: string } | { ansi: false; value: string };
+    const tokens: Token[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = ANSI_RE.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            for (const ch of text.slice(lastIndex, match.index)) tokens.push({ ansi: false, value: ch });
+        }
+        tokens.push({ ansi: true, value: match[0] });
+        lastIndex = ANSI_RE.lastIndex;
+    }
+    if (lastIndex < text.length) {
+        for (const ch of text.slice(lastIndex)) tokens.push({ ansi: false, value: ch });
+    }
+
+    const visibleCount = tokens.filter(t => !t.ansi).length;
+    let charIndex = 0;
+    return tokens.map(token => {
+        if (token.ansi) return token.value;
+        const hue = (charIndex++ / Math.max(visibleCount - 1, 1)) * 360;
         const [r, g, b] = hslToRgb(hue);
-        return `${ANSI.FG.RGB(r, g, b)}${char}`;
+        return `${ANSI.FG.RGB(r, g, b)}${token.value}`;
     }).join('') + ANSI.STYLE.reset;
 }
 
@@ -523,7 +559,29 @@ export const rainbow16 = (text: string): string => {
         ANSI.FG.Blue, ANSI.FG.BrightBlue,
         ANSI.FG.Magenta, ANSI.FG.BrightMagenta,
     ];
-    return text.split('').map((char, i) => `${colors[i % colors.length]}${char}`).join('') + ANSI.STYLE.reset;
+
+    // Tokenize: ANSI escape sequences pass through, only visible chars get colored
+    const ANSI_RE = /\x1b\[[0-9;]*m/g;
+    type Token = { ansi: true; value: string } | { ansi: false; value: string };
+    const tokens: Token[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = ANSI_RE.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            for (const ch of text.slice(lastIndex, match.index)) tokens.push({ ansi: false, value: ch });
+        }
+        tokens.push({ ansi: true, value: match[0] });
+        lastIndex = ANSI_RE.lastIndex;
+    }
+    if (lastIndex < text.length) {
+        for (const ch of text.slice(lastIndex)) tokens.push({ ansi: false, value: ch });
+    }
+
+    let charIndex = 0;
+    return tokens.map(token => {
+        if (token.ansi) return token.value;
+        return `${colors[charIndex++ % colors.length]}${token.value}`;
+    }).join('') + ANSI.STYLE.reset;
 }
 
 // x Styles
@@ -570,10 +628,10 @@ export const [
     addEventListener,
     configure,
 ] = [
-        logger.log.bind(logger),
-        logger.addEventListener.bind(logger),
-        logger.configure.bind(logger),
-    ];
+    logger.log.bind(logger),
+    logger.addEventListener.bind(logger),
+    logger.configure.bind(logger),
+];
 
 
 export default {
@@ -633,3 +691,8 @@ export default {
     ANSI,
 }
 
+logger.log(
+    rainbow(
+        underline("ComfyLogger initialized and ready to use!")
+    )
+)
