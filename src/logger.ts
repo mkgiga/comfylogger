@@ -7,6 +7,10 @@ export type LoggerRuntimeConfig = {
     trimAfter?: string;
     externalLogging?: ComfyLoggerExternalLoggingOptions;
     console?: boolean;
+    /**
+     * Tags which can be used to categorize loggers.
+     * Used for filtering log output.
+     */
     tags?: string[];
     logErrorsToConsole?: boolean;
 }
@@ -32,17 +36,19 @@ const sharedGlobalConfig: LoggerRuntimeConfig = {
     logErrorsToConsole: true,
 }
 
-const internalGlobalConfig = {
-    whitelistTags: new Set<string>(),
-    blacklistTags: new Set<string>(),
+const __internalGlobalConfig = {
+    filter: {
+        whitelistTags: new Set<string>(),
+        blacklistTags: new Set<string>(),
+    }
 };
 
 export const blacklistTag = (tag: string) => {
-    internalGlobalConfig.blacklistTags.add(tag);
+    __internalGlobalConfig.filter.blacklistTags.add(tag);
 }
 
 export const whitelistTag = (tag: string) => {
-    internalGlobalConfig.whitelistTags.add(tag);
+    __internalGlobalConfig.filter.whitelistTags.add(tag);
 }
 
 export const cliArgs = {
