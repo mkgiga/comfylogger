@@ -36,6 +36,48 @@ const sharedGlobalConfig: LoggerRuntimeConfig = {
     logErrorsToConsole: true,
 }
 
+export class ComfyLoggerSettings {
+    static blacklistTag(tag: string | string[]) {
+        if (typeof tag === 'string') {
+            __internalGlobalConfig.filter.blacklistTags.add(tag);
+        } else if (Array.isArray(tag)) {
+            for (const t of tag) {
+                __internalGlobalConfig.filter.blacklistTags.add(t);
+            }
+        }
+    }
+
+    static blacklistTags(tags: string[]) {
+        for (const tag of tags) {
+            __internalGlobalConfig.filter.blacklistTags.add(tag);
+        }
+    }
+
+    static whitelistTag(tag: string | string[]) {
+        if (typeof tag === 'string') {
+            __internalGlobalConfig.filter.whitelistTags.add(tag);
+        } else if (Array.isArray(tag)) {
+            for (const t of tag) {
+                __internalGlobalConfig.filter.whitelistTags.add(t);
+            }
+        }
+    }
+
+    static whitelistTags(tags: string[]) {
+        for (const tag of tags) {
+            __internalGlobalConfig.filter.whitelistTags.add(tag);
+        }
+    }
+
+    static isTagBlacklisted(tag: string): boolean {
+        return __internalGlobalConfig.filter.blacklistTags.has(tag);
+    }
+
+    static isTagWhitelisted(tag: string): boolean {
+        return __internalGlobalConfig.filter.whitelistTags.has(tag);
+    }
+}
+
 const __internalGlobalConfig = {
     filter: {
         whitelistTags: new Set<string>(),
