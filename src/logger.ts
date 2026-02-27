@@ -150,7 +150,7 @@ export class ComfyLogger {
             }
 
             if (options.name) {
-                this.name = options.name;
+                this.name = options.name || `logger-${nanoid()}`;
             }
         }
     }
