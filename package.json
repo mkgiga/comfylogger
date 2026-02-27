@@ -14,5 +14,24 @@
   ],
   "author": "",
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "main": "./dist/logger.js",
+  "types": "./dist/logger.d.ts",
+  "exports": {
+    ".": {
+      "types": "dist/logger.d.ts",
+      "import": "dist/logger.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
 }
