@@ -5,13 +5,13 @@
     "moduleResolution": "NodeNext",
     "declaration": true,
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./src",
     "types": ["node"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["logger.ts", "util/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
