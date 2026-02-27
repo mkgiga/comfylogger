@@ -28,7 +28,10 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm run build"
+    "cleanup": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "prepublish": "npm run cleanup && npm run build",
+    "test": "npm run prepublish && node dist/test/test.js"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
