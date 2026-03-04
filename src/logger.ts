@@ -690,9 +690,3 @@ export default {
     reset: ANSI.STYLE.reset,
     ANSI,
 }
-
-logger.log(
-    rainbow(
-        underline("ComfyLogger initialized and ready to use!")
-    )
-)
