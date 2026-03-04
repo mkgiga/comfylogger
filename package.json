@@ -1,6 +1,6 @@
 {
   "name": "comfylogger",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A simple and versatile logging library for both Node.js and browser environments.",
   "keywords": [
     "logging",
@@ -12,7 +12,7 @@
     "typescript",
     "browser"
   ],
-  "author": "",
+  "author": "mkgiga",
   "license": "MIT",
   "type": "module",
   "main": "./dist/logger.js",
